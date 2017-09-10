@@ -38,36 +38,48 @@ func main() {
 	godoc.Wait()
 }
 
-// buildPackageURL gets the url of the specificed package doc
+// buildPackageURL creates the url for package doc
 func buildPackageURL(pkg string) (string, error) {
+	if path, ok := localPackagePath(pkg); ok {
+		return formatURL(path), nil
+	}
+	if path, ok := standardPackagePath(pkg); ok {
+		return formatURL(path), nil
+	}
+	return "", fmt.Errorf("[ERR] Package doesn't exist")
+}
+
+// localPackagePath gets the pkg path and checks if the package is a local package
+func localPackagePath(pkg string) (string, bool) {
 	path, err := filepath.Abs(pkg)
 	if err != nil {
-		return "", err
+		return "", false
 	}
 
 	gopath := os.Getenv("GOPATH")
-	if !strings.Contains(path, gopath) {
-		if isStdPackage(pkg) {
-			return fmt.Sprintf("%v%v/pkg/%v", HOST, PORT, pkg), nil
-		}
-		return "", fmt.Errorf("[ERR] Make sure your package is in your $GOPATH")
+	_, err = os.Stat(path)
+	if !strings.Contains(path, gopath) || err != nil {
+		return "", false
 	}
-	pkgPath := path[len(gopath+"/src/"):]
-
-	return fmt.Sprintf("%v%v/pkg/%v", HOST, PORT, pkgPath), nil
+	return path[len(gopath+"/src/"):], true
 }
 
-// isStdPackage checks if the specified package is apart of the std library
-func isStdPackage(pkg string) bool {
+// standardPackagePath get the pkg path and checks if the package is apart of the std package
+func standardPackagePath(pkg string) (string, bool) {
 	out, err := exec.Command("go", "env", "GOROOT").Output()
 	if err != nil {
-		return false
+		return "", false
 	}
 
 	goroot := strings.Trim(string(out), "\n")
 	path := fmt.Sprintf("%v/src/%v", goroot, pkg)
 	if _, err = os.Stat(path); err != nil {
-		return false
+		return "", false
 	}
-	return true
+	return pkg, true
+}
+
+// formatURL formats the url to open in broswer
+func formatURL(path string) string {
+	return fmt.Sprintf("%v%v/pkg/%v", HOST, PORT, path)
 }
