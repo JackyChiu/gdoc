@@ -16,4 +16,10 @@ gdoc
 
 # view subpackage 
 gdoc bar
+
+# view std packages
+gdoc os/exec
+
+# view any package path
+gdoc ../../anotherUser/anotherPkg
 ```
