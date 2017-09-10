@@ -40,10 +40,6 @@ func main() {
 
 // buildPackageURL gets the url of the specificed package doc
 func buildPackageURL(pkg string) (string, error) {
-	if isStdPackage(pkg) {
-		return fmt.Sprintf("%v%v/pkg/%v", HOST, PORT, pkg), nil
-	}
-
 	path, err := filepath.Abs(pkg)
 	if err != nil {
 		return "", err
@@ -51,6 +47,9 @@ func buildPackageURL(pkg string) (string, error) {
 
 	gopath := os.Getenv("GOPATH")
 	if !strings.Contains(path, gopath) {
+		if isStdPackage(pkg) {
+			return fmt.Sprintf("%v%v/pkg/%v", HOST, PORT, pkg), nil
+		}
 		return "", fmt.Errorf("[ERR] Make sure your package is in your $GOPATH")
 	}
 	pkgPath := path[len(gopath+"/src/"):]
