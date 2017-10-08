@@ -1,41 +1,38 @@
-package main
+package gdoc
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
+// Local browser constants
 const (
 	HOST = "http://localhost"
 	PORT = ":6060"
 )
 
-func main() {
-	godoc := exec.Command("godoc", "-http", PORT)
-	godoc.Start()
+// StartDocServer runs the godoc server and stops when you kill the process
+func StartDocSever() *exec.Cmd {
+	cmd := exec.Command("godoc", "-http", PORT)
+	cmd.Start()
+	return cmd
+}
 
-	pkg := "."
-	if len(os.Args) > 1 {
-		pkg = os.Args[1]
-	}
-
+// OpenPackage opens the package in your local browser
+func OpenPackage(pkg string) (string, error) {
 	url, err := buildPackageURL(pkg)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", err
 	}
-	fmt.Printf("Serving on: %v", url)
-
-	err = exec.Command("open", url).Run()
-	if err != nil {
-		log.Fatal(err)
+	if err = exec.Command("open", url).Run(); err != nil {
+		return "", errors.Wrap(err, "can't open url")
 	}
-
-	godoc.Wait()
+	return url, nil
 }
 
 // buildPackageURL creates the url for package doc
