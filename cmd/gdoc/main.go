@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// wait for doc server to start
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(time.Second)
 
 	url, err := gdoc.OpenPackage(pkg)
 	if err != nil {
