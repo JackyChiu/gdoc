@@ -18,6 +18,7 @@ func main() {
 		pkg = os.Args[1]
 	}
 
+	fmt.Println("startig go doc server...")
 	// wait for doc server to start
 	time.Sleep(time.Second)
 
